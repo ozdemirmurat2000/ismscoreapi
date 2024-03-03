@@ -44,7 +44,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/add_match", saveDataForUser).Methods("POST")
 	router.HandleFunc("/delete_match/{match_id}/{device_id}", deleteMatchHandler).Methods("DELETE")
-	port := ":5050"
+	port := ":4000"
 	log.Printf("HTTP sunucusu %s portunda başlatıldı\n", port)
 	go http.ListenAndServe(port, router)
 
