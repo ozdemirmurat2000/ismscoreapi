@@ -6,6 +6,7 @@ import (
 	"ismscoreapi/myModels"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -47,7 +48,10 @@ func main() {
 	app.Post("/add_match",saveDataForUser)
 	app.Delete("/delete_match/:match_id/:device_id", deleteMatchHandler)
 
-	port := ":3000"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = ":3000"
+	}
 	log.Printf("HTTP sunucusu %s portunda başlatıldı\n", port)
 
 	// API URL
@@ -110,6 +114,8 @@ func fetchDataFromAPI(apiURL string) {
 
 	 listGoalNew := set.New()
 	 listGoalOld := set.New()
+	 listCardsNew := set.New()
+	 listCardsOld := set.New()
 
 	
 
@@ -131,7 +137,23 @@ func fetchDataFromAPI(apiURL string) {
 				
 				})
 			}
-	
+			for _, v1 := range v.Cards {
+
+				listCardsNew.Insert(DiffCard{
+					
+					Time: v1.Time,
+					HomeFault: v1.HomeFault,
+					AwayFault: v1.AwayFault,
+					Card: v1.Card,
+					MatchID: v.MatchID,
+					HomeTeamName: v.MatchHometeamName,
+					AwayTeamName: v.MatchAwayteamName,
+					MatchStatus: v.MatchStatus,
+					
+				
+				})
+			}
+		
 		}
 
 	}
@@ -153,12 +175,30 @@ func fetchDataFromAPI(apiURL string) {
 				
 				})
 			}
+			for _, v1 := range v.Cards {
+
+				listCardsOld.Insert(DiffCard{
+					
+					Time: v1.Time,
+					HomeFault: v1.HomeFault,
+					AwayFault: v1.AwayFault,
+					Card: v1.Card,
+					MatchID: v.MatchID,
+					HomeTeamName: v.MatchHometeamName,
+					AwayTeamName: v.MatchAwayteamName,
+					MatchStatus: v.MatchStatus,
+					
+				
+				})
+			}
+
 		}
 
 
 	}
 
 	diff := listGoalNew.Difference(listGoalOld)
+	diffCard := listCardsNew.Difference(listCardsOld)
 
 	diff.Do(func(i interface{}) {
 		goal, ok := i.(DiffGoal)
@@ -186,6 +226,31 @@ func fetchDataFromAPI(apiURL string) {
 
 	})
 		
+	diffCard.Do(func(i interface{}) {
+		card, ok := i.(DiffCard)
+		if !ok {
+			log.Println("Hata: Goal modeline dönüştürme başarısız")
+			return
+		}
+
+		if card.MatchStatus == card.Time {
+			
+
+			data, err := getDataByMatchID(card.MatchID)
+			if err != nil {
+				log.Println("Veri alınamadı:", err)
+				return
+			}
+			
+			for _, item := range data {
+				log.Println("Maç ID:", item.MatchID, "Device ID:", item.DeviceID,"------> BU CIHAZA BILDIRIM GONDERILDI")
+			}
+			
+		}
+
+
+	})
+		
 
 	
 }
@@ -198,6 +263,17 @@ type DiffGoal struct {
 	HomeScorer    string 
 	AwayScorer    string
 }
+type DiffCard struct {
+		MatchStatus	  string
+		MatchID 	  string
+		HomeTeamName  string
+		AwayTeamName  string
+		Time          string 
+		HomeFault     string 
+		Card          string 
+		AwayFault     string 
+}
+
 
 type ControlModel struct {
 
