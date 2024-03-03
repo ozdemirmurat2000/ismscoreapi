@@ -65,6 +65,8 @@ func main() {
 // CANLI MAC VERILERINI AL
 func fetchDataFromAPI(apiURL string) {
 
+	log.Println("maclar alindi")
+
 	// BIRINCI LISTEYI AL 
 	resp, err := http.Get(apiURL)
 	if err != nil {
