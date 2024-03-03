@@ -154,6 +154,10 @@ func fetchDataFromAPI(apiURL string) {
 				})
 			}
 		
+		}else{
+
+			deleteDataByMatchID(v.MatchID)
+			
 		}
 
 	}
@@ -192,6 +196,10 @@ func fetchDataFromAPI(apiURL string) {
 				})
 			}
 
+		} else{
+
+			deleteDataByMatchID(v.MatchID)
+			
 		}
 
 
@@ -218,7 +226,7 @@ func fetchDataFromAPI(apiURL string) {
 			}
 			
 			for _, item := range data {
-				log.Println("Maç ID:", item.MatchID, "Device ID:", item.DeviceID,"------> BU CIHAZA BILDIRIM GONDERILDI")
+				log.Println("Maç ID:", item.MatchID, "Device ID:", item.DeviceID,"------> BU CIHAZA GOL BILDIRIMI GONDERILDI")
 			}
 			
 		}
@@ -243,7 +251,7 @@ func fetchDataFromAPI(apiURL string) {
 			}
 			
 			for _, item := range data {
-				log.Println("Maç ID:", item.MatchID, "Device ID:", item.DeviceID,"------> BU CIHAZA BILDIRIM GONDERILDI")
+				log.Println("Maç ID:", item.MatchID, "Device ID:", item.DeviceID,"------> BU CIHAZA KART BILDIRIMI GONDERILDI")
 			}
 			
 		}
@@ -282,24 +290,6 @@ type ControlModel struct {
 	Cards []interface{}
 }
 
-func deleteMatchInList(model ControlModel,silinecekItem []myModels.SubMatch) {
-
-	for index, result := range silinecekItem {
-
-		if result.MatchID == model.MatchID {
-			silinecekItem = append(silinecekItem[:index], silinecekItem[index+1:]...)
-
-		}
-
-
-		
-	}
-
-
-
-	
-}
-
 	/// VERIYI SIL  
 func deleteMatchHandler(c *fiber.Ctx) error {
 	// PARAMETRELERI AL
@@ -318,6 +308,24 @@ func deleteMatchHandler(c *fiber.Ctx) error {
 	// SILINEN VERIYI GOSTER
 	return c.JSON(result)
 }
+func deleteDataByMatchID(matchID string) error {
+    // DATABASE'DEN VERIYI SIL
+    collection := client.Database(DBName).Collection(Collection)
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+    
+    result, err := collection.DeleteOne(ctx, bson.M{"match_id": matchID})
+    if err != nil {
+        log.Println("Veri silinirken hata oluştu:", err)
+        return err
+    }
+
+    // SILINEN VERIYI GOSTER
+    log.Printf("Silinen veri sayısı: %d\n", result.DeletedCount)
+
+    return nil
+}
+
 // DATABASEDEN UYUSAN VERIYI BUL
 
 func getDataByMatchID(matchID string) ([]DbDATA, error) {
