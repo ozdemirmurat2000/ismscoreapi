@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-collections/collections/set"
-	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -21,6 +21,7 @@ const (
 	DBName      = "saves"
 	Collection  = "saves_details"
 )
+
 type HaveRedCard struct {
 
 	MatchID string
@@ -41,24 +42,30 @@ func main() {
 	}
 
 	// HTTP SUNUCU BASLAT
-	router := mux.NewRouter()
-	router.HandleFunc("/add_match", saveDataForUser).Methods("POST")
-	router.HandleFunc("/delete_match/{match_id}/{device_id}", deleteMatchHandler).Methods("DELETE")
+	app := fiber.New()
+
+	app.Post("/add_match",saveDataForUser)
+	app.Delete("/delete_match/:match_id/:device_id", deleteMatchHandler)
+
 	port := ":3000"
 	log.Printf("HTTP sunucusu %s portunda başlatıldı\n", port)
-	go http.ListenAndServe(port, router)
 
 	// API URL
 	apiURL := "https://apiv3.apifootball.com?action=get_events&APIkey=0bb2e1fcd01fe076d54ae77d3acfe2a57353820b668d5efb837e5167b7cb1f8d&match_live=1&timezone=Europe/Istanbul&withPlayerStats=1"
 
+
+
 	// APIYE ATILAN ISTEK SURESI
 	go func() {
 		for {
+			
 			fetchDataFromAPI(apiURL)
 		}
 	}()
 
 	// SERVERI SUREKLI ACIK TUT
+	app.Listen("0.0.0.0"+port)
+
 	select {}
 }
 
@@ -66,6 +73,8 @@ func main() {
 func fetchDataFromAPI(apiURL string) {
 
 	log.Println("maclar alindi")
+
+
 
 	// BIRINCI LISTEYI AL 
 	resp, err := http.Get(apiURL)
@@ -216,11 +225,10 @@ func deleteMatchInList(model ControlModel,silinecekItem []myModels.SubMatch) {
 }
 
 	/// VERIYI SIL  
-func deleteMatchHandler(w http.ResponseWriter, r *http.Request) {
+func deleteMatchHandler(c *fiber.Ctx) error {
 	// PARAMETRELERI AL
-	params := mux.Vars(r)
-	matchID := params["match_id"]
-	deviceID := params["device_id"]
+	matchID := c.Params("match_id")
+	deviceID := c.Params("device_id")
 
 	// DATABASE DEN VERILERI SIL
 	collection := client.Database(DBName).Collection(Collection)
@@ -228,12 +236,11 @@ func deleteMatchHandler(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	result, err := collection.DeleteOne(ctx, bson.M{"match_id": matchID, "device_id": deviceID})
 	if err != nil {
-		http.Error(w, "Veri silinirken hata oluştu: "+err.Error(), http.StatusInternalServerError)
-		return
+		return c.Status(http.StatusInternalServerError).SendString("Veri silinirken hata oluştu: " + err.Error())
 	}
 
 	// SILINEN VERIYI GOSTER
-	json.NewEncoder(w).Encode(result)
+	return c.JSON(result)
 }
 // DATABASEDEN UYUSAN VERIYI BUL
 
@@ -266,12 +273,10 @@ func getDataByMatchID(matchID string) ([]DbDATA, error) {
 
 // KULLANICIDAN GELEN VERIYI KAYDET
 
-func saveDataForUser(w http.ResponseWriter, r *http.Request) {
+func saveDataForUser(c *fiber.Ctx) error {
 	var data DbDATA
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		http.Error(w, "Gönderilen veri hatalı", http.StatusBadRequest)
-		return
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(http.StatusInternalServerError).SendString("Veri silinirken hata oluştu: " + err.Error())
 	}
 
 	// DATABASE VERI EKLE
@@ -280,13 +285,13 @@ func saveDataForUser(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	result, err := collection.InsertOne(ctx, data)
 	if err != nil {
-		http.Error(w, "Veri eklenirken hata oluştu: "+err.Error(), http.StatusInternalServerError)
-		return
+		return c.Status(http.StatusInternalServerError).SendString("Veri silinirken hata oluştu: " + err.Error())
 	}
 
 	// EKLENEN VERIYI GOSTER
-	json.NewEncoder(w).Encode(result)
+	return c.JSON(result)
 }
+
 
 // ORNEK VERI 
 type DbDATA struct {

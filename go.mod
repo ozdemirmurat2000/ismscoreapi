@@ -8,11 +8,28 @@ require (
 )
 
 require (
+	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/gofiber/utils v0.0.10 // indirect
+	github.com/google/uuid v1.5.0 // indirect
+	github.com/gorilla/schema v1.1.0 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-runewidth v0.0.15 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/valyala/bytebufferpool v1.0.0 // indirect
+	github.com/valyala/fasthttp v1.51.0 // indirect
+	github.com/valyala/tcplisten v1.0.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
+)
+
+require (
 	github.com/emirpasic/gods v1.18.1 // indirect
+	github.com/gofiber/fiber v1.14.6
+	github.com/gofiber/fiber/v2 v2.52.2
 	github.com/golang-collections/collections v0.0.0-20130729185459-604e922904d3
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/go-cmp v0.6.0
-	github.com/klauspost/compress v1.13.6 // indirect
+	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
