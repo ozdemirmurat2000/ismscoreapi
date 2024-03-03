@@ -154,10 +154,6 @@ func fetchDataFromAPI(apiURL string) {
 				})
 			}
 		
-		}else{
-
-			deleteDataByMatchID(v.MatchID)
-			
 		}
 
 	}
@@ -196,11 +192,7 @@ func fetchDataFromAPI(apiURL string) {
 				})
 			}
 
-		} else{
-
-			deleteDataByMatchID(v.MatchID)
-			
-		}
+		} 
 
 
 	}
@@ -308,23 +300,7 @@ func deleteMatchHandler(c *fiber.Ctx) error {
 	// SILINEN VERIYI GOSTER
 	return c.JSON(result)
 }
-func deleteDataByMatchID(matchID string) error {
-    // DATABASE'DEN VERIYI SIL
-    collection := client.Database(DBName).Collection(Collection)
-    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-    defer cancel()
-    
-    result, err := collection.DeleteOne(ctx, bson.M{"match_id": matchID})
-    if err != nil {
-        log.Println("Veri silinirken hata oluştu:", err)
-        return err
-    }
 
-    // SILINEN VERIYI GOSTER
-    log.Printf("Silinen veri sayısı: %d\n", result.DeletedCount)
-
-    return nil
-}
 
 // DATABASEDEN UYUSAN VERIYI BUL
 
@@ -360,16 +336,21 @@ func getDataByMatchID(matchID string) ([]DbDATA, error) {
 func saveDataForUser(c *fiber.Ctx) error {
 	var data DbDATA
 	if err := c.BodyParser(&data); err != nil {
-		return c.Status(http.StatusInternalServerError).SendString("Veri silinirken hata oluştu: " + err.Error())
+		return c.Status(http.StatusInternalServerError).SendString("Veri eklenirken hata oluştu: " + err.Error())
 	}
 
 	// DATABASE VERI EKLE
 	collection := client.Database(DBName).Collection(Collection)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+
+	// Ekleme tarihi alanını belirle
+	data.CreatedAt = time.Now()
+
+	// Veriyi veritabanına ekle
 	result, err := collection.InsertOne(ctx, data)
 	if err != nil {
-		return c.Status(http.StatusInternalServerError).SendString("Veri silinirken hata oluştu: " + err.Error())
+		return c.Status(http.StatusInternalServerError).SendString("Veri eklenirken hata oluştu: " + err.Error())
 	}
 
 	// EKLENEN VERIYI GOSTER
@@ -381,5 +362,7 @@ func saveDataForUser(c *fiber.Ctx) error {
 type DbDATA struct {
 	MatchID   string `json:"match_id,omitempty" bson:"match_id,omitempty"`
 	DeviceID  string `json:"device_id,omitempty" bson:"device_id,omitempty"`
+	CreatedAt  time.Time `json:"created_at,omitempty" bson:"created_at,omitempty"`
 }
+
 
