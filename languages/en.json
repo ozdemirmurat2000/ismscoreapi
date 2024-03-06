@@ -1,0 +1,10 @@
+{
+    "mac_basladi": "Match Started",
+    "mac_bitti": "Match Ended",
+    "ilk_yari_bitti": "First Half Ended",
+    "ikinci_yari_basaladi": "Second Half Started",
+    "gol": "Goal",
+    "gol_ipta": "Goal Cancelled",
+    "kirmizi_kart": "Red Card",
+    "kirmizi_kart_iptal": "Red Card Cancelled"
+}

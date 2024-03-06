@@ -15,6 +15,17 @@ type Goal struct {
 	ScoreInfoTime string `json:"score_info_time"`
 }
 
+type Card struct {
+	Time          string `json:"time"`
+	HomeFault     string `json:"home_fault"`
+	Card          string `json:"card"`
+	AwayFault     string `json:"away_fault"`
+	Info          string `json:"info"`
+	HomePlayerID  string `json:"home_player_id"`
+	AwayPlayerID  string `json:"away_player_id"`
+	ScoreInfoTime string `json:"score_info_time"`
+}
+
 type SubMatch struct {
 	MatchID                    string `json:"match_id"`
 	CountryID                  string `json:"country_id"`
@@ -52,14 +63,5 @@ type SubMatch struct {
 	FkStageKey                 string `json:"fk_stage_key"`
 	StageName                  string `json:"stage_name"`
 	Goalscorer                 []Goal `json:"goalscorer"`
-	Cards                      []struct {
-		Time          string `json:"time"`
-		HomeFault     string `json:"home_fault"`
-		Card          string `json:"card"`
-		AwayFault     string `json:"away_fault"`
-		Info          string `json:"info"`
-		HomePlayerID  string `json:"home_player_id"`
-		AwayPlayerID  string `json:"away_player_id"`
-		ScoreInfoTime string `json:"score_info_time"`
-	} `json:"cards"`
+	Cards                      []Card `json:"cards"`
 }
