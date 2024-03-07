@@ -43,7 +43,9 @@ func main() {
 
 	// HTTP SUNUCU BASLAT
 	app := fiber.New()
-
+	app.Get("/",func(c *fiber.Ctx) error {
+		return c.SendString("hello world")
+	})
 	app.Post("/add_match",saveDataForUser)
 	app.Delete("/delete_match/:match_id/:device_id", deleteMatchHandler)
 
@@ -59,17 +61,18 @@ func main() {
 	
 
 	// APIYE ATILAN ISTEK SURESI
+
+	// APIYE ATILAN ISTEK SURESI
 	go func() {
 		for {
 			fetchDataFromAPI(apiURL,oldMatches)
 		}
 	}()
 
-	
-
 	// SERVERI SUREKLI ACIK TUT
-	app.Listen("0.0.0.0"+port)
-	
+	app.Listen("0.0.0.0" + port)
+
+	// Tüm go rutinlerinin tamamlanmasını bekle
 	select {}
 }
 
@@ -78,12 +81,6 @@ func main() {
 func fetchDataFromAPI(apiURL string,oldMatches map[string]myModels.SubMatch) {
 
 	log.Println("maclar alindi")
-
-
-
-
-
-	// // BIRINCI LISTEYI AL 
 	resp, err := http.Get(apiURL)
 	if err != nil {
 		log.Println("API'ye istek gönderilirken hata oluştu:", err)
@@ -179,16 +176,19 @@ func fetchDataFromAPI(apiURL string,oldMatches map[string]myModels.SubMatch) {
 				oldAwayGoal,_ := strconv.Atoi(checkScore(oldMatches[v.MatchID].MatchAwayteamScore))
 
 				if newHomeGoal > oldHomeGoal {
+					log.Println(db)
 					log.Println("ev sahibi gol atti")
 					for _, dbv := range db {
 						log.Println(dbv.DeviceID)
 						lan :=	dbv.Language
-				lang,_ :=	getLanguage(lan)
+						lang,_ :=	getLanguage(lan)
 						SendNotificationToUser(dbv.DeviceID, lang["gol"]+"'"+v.MatchStatus+" "+v.MatchHometeamName,bildirimText(v))
 						log.Println("gol bildirimi gonderildi =>",dbv.DeviceID,lang["gol"])
 					}
 				}
 				if newHomeGoal < oldHomeGoal {
+					log.Println(db)
+
 					log.Println("ev sahibi gol İptal")
 					for _, dbv := range db {
 						lang,_ :=	getLanguage(dbv.Language)
@@ -197,6 +197,7 @@ func fetchDataFromAPI(apiURL string,oldMatches map[string]myModels.SubMatch) {
 					}
 				}
 				if newAwayGoal > oldAwayGoal {
+					log.Println(db)
 					
 					log.Println("deplasman gol atti")
 					for _, dbv := range db {
@@ -209,6 +210,8 @@ func fetchDataFromAPI(apiURL string,oldMatches map[string]myModels.SubMatch) {
 					}
 				}
 				if newAwayGoal < oldAwayGoal {
+					log.Println(db)
+
 					log.Println("deplasman gol İptal")
 					for _, dbv := range db {
 						lan :=	dbv.Language
@@ -342,7 +345,6 @@ func fetchDataFromAPI(apiURL string,oldMatches map[string]myModels.SubMatch) {
 
 	
 
-	
 }
 
 func checkScore(s string)string  {
